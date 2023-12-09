@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const port = 3000;
-let db = new Map();
+let db = {}
 let i = 0;
 
 app.get('/', function(_req, res) {
@@ -10,26 +10,33 @@ app.get('/', function(_req, res) {
 });
 
 app.post('/certs', async function(_req, res) {
-    db.set(i++, `value${i+2}`);
+    const id = i++;
+    db[id] =  {id: id, name: `value${id}`};
     res.status(201).json({"success":"Certificate created"});
 });
 
 app.get('/certs', async function(_req, res) {
     console.log(db);
-    res.status(200).json({"success": Object.fromEntries(db)})
+    res.status(200).json(db)
+});
+
+app.get('/certs/:id', async function(req, res) {
+    console.log(req.params.id);
+    res.status(200).json(db[req.params.id])
 });
 
 app.delete('/certs/:id', async function (req, res) {
-    const id = Number(req.params.id);
+    const id = req.params.id;
     console.log(id)
     console.log(db)
-    const deleted = db.delete(id);
-    console.log(deleted)
+    const deleted = id in db;    
+    delete db[id];
+    //TODO: check
     console.log(db)
     if (deleted) {
-        res.status(204).json({});
+        res.status(200).json({status:"ok"});
     } else {
-        res.status(400).json({});
+        res.status(400).json({status:"not found"});
     }
 })
 
