@@ -136,12 +136,12 @@
                 const certList = document.getElementById('certList');
                 certList.innerHTML = '';
 
-                for (const id in response) {
+                for (const i in response) {
                     const listItem = document.createElement('li');
                     listItem.innerHTML = `
-                        <p>${id}</p>
-                        <button onclick="download('${id}')">Download</button>
-                         <button onclick="deleteCert('${id}')">Delete</button>
+                        <p>id: ${response[i].ID}, name: ${response[i].name}</p>
+                        <button onclick="download('${response[i].ID}')">Download</button>
+                         <button onclick="deleteCert('${response[i].ID}')">Delete</button>
                     `;                   
                     certList.appendChild(listItem);
                 };

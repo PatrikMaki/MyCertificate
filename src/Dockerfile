@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY . .
 
+RUN rm -rf node_modules package-lock.json
 RUN npm install
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]
