@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test my boilerplate</title>
+    <title>My Certificate Application</title>
     <style>
-        body {
+        /*body {
             font-family: Arial, sans-serif;
             margin: 20px;
             transition: background-color 0.3s;
             background-color: #333;
         }
         form {
-            margin-bottom: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
         ul {
             list-style: none;
@@ -23,32 +24,20 @@
         li {
             margin: 10px;
             text-align: center;
-            background-color: #333; /* Dark background color */
+            background-color: #333; 
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s;
         }
-        img {
-            max-width: 100px;
-            max-height: 100px;
-        }
-        input[type="file"] {
-            display: none;
-        }
         label {
-            background-color: #028316;
+            background-color: #170283;
             color: rgb(25, 25, 25);
-            padding: 8px;
-            border: none;
-            cursor: pointer;
+            padding: 5px;
             transition: background-color 0.3s;
         }
-        label:hover {
-            background-color: #45a049;
-        }
         input[type="submit"] {
-            background-color: #028316;
+            background-color: #170283;
             color: rgb(25, 25, 25);
             padding: 8px;
             border: none;
@@ -56,10 +45,10 @@
             transition: background-color 0.3s;
         }
         input[type="submit"]:hover {
-            background-color: #45a049;
+            background-color: #00ff2a;
         }
         button {
-            background-color: #028316;
+            background-color: rgb(2, 110, 131);
             color: rgb(25, 25, 25);
             padding: 8px;
             border: none;
@@ -67,21 +56,46 @@
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
-        }
+            background-color: rgb(255, 0, 0);
+        }*/
     </style>
 </head>
 <body>
+    <h1>My Certificate Application</h1>
+    <form id="CertForm" action="javascript:createCert()">
+        <label for="text">Common Name:</label>
+        <input id="CN" type="text"/><br><br>
+        <label for="text">Organization:</label>
+        <input id="O" type="text"/><br><br>
+        <label for="text">Country:</label>
+        <input id="C" type="text"/><br><br>
+        <label for="text">Validity:</label>
+        <input id="days" type="number" min="1"/><br><br>
+        <label for="text">Generate key:</label>
+        <input id="generateKey" type="checkbox" checked="on"/><br><br>
+        <input type="submit" value="Create Cert"/><br><br>
+    </form>
     <button onclick="test()">test</button>
-    <button onclick="createCert()">create cert</button>
     <button onclick="listCerts()">list certs</button>
-    <button onclick="deleteCert()">delete certs</button>
     <ul id="certList"></ul>
     <script>
         function test() {
             console.log("hello");
         }
         function createCert() {
+            const CN = document.getElementById("CN").value;
+            const O = document.getElementById("O").value;            
+            const C = document.getElementById("C").value; 
+            let days = document.getElementById("days").value;            
+            const generateKey = document.getElementById("generateKey").value;
+            
+            const validation = validate(CN, O, C, days);
+            if (validation !=="") {
+                console.log("Alert", validation);
+                alert(validation)
+                return;
+            }            
+            days = Number(days);
             const validity=1;
             const subjectName = "country"
             if(subjectName==="country") {
@@ -92,10 +106,17 @@
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ "validity": validity, "subjectName": subjectName })
+                    body: JSON.stringify({ 
+                        "CN": CN, 
+                        "O": O,
+                        "C": C,
+                        "days": days,
+                        "generateKey": generateKey,    
+                    })
                 })
                    .then(response => response.json())
                    .then(response => console.log(JSON.stringify(response)))
+                   .then(listCerts())
             } else {
                 //TODO: show error on UI
                 console.log("error");
@@ -139,6 +160,13 @@
             })
                .then(response => response.json())
                .then(response => console.log(JSON.stringify(response)))
+               .then(listCerts())
+        }
+        function validate(CN, O, C, days) {
+            if (CN === "") return "Common name cannot be empty";
+            if (C === "") return "A country is needed";
+            if (days === "") return "validity in days must be given";
+            return "";
         }
     </script>
 </body>
