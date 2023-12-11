@@ -1,0 +1,121 @@
+openapi: 3.0.0
+servers: []
+info:
+  version: "1.0.0"
+  title: My-Certificate-Application
+  description: The API for My Certificate Application
+paths:
+  /certs:
+    post:
+      description: Create a new certificate
+      requestBody:
+        description: Parameters for new certificate
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+      responses:
+        '201':
+          description: Created a new certificate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateRequestResponse'
+        '400':
+          description: Failed to create certificate since some parameter was wrong
+    get:
+      description: returns all certificates
+      responses:
+        '200':
+          description: All the certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CertificateResponse'
+  '/certs/{id}':
+     get:
+       description: return a certificate
+       parameters:
+         - in: path
+           name: id
+           schema:
+             type: string
+           required: true
+           description: The hexadecimal number of the certificate
+       responses:
+         '200':
+           description: The certificate
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/CertificateResponse'
+         '404':
+           description: The certificate was not found
+     delete:
+       description: delete a certificate
+       parameters:
+         - in: path
+           name: id
+           schema:
+             type: string
+           required: true
+           description: The hexadecimal number of the certificate
+       responses:
+         '200':
+           description: The certificate was deleted successfully
+         '404':
+           description: The certificate was not found
+components:
+  schemas:
+    CertificateRequest:
+      title: A certificate creation request
+      type: object
+      properties:
+        C:
+          type: string
+          description: Country code for the subject name
+        O:
+          type: string
+          description: Organization for the subject name
+        CN:
+          type: string
+          description: Common name for the subject name
+        days:
+          type: integer
+          minimum: 1
+          maximum: 365
+          description: Validity of the certificate in days
+      required:
+        - C
+        - O
+        - CN
+        - days
+    CertificateResponse:
+      title: Certificate response
+      type: object
+      properties:
+        id:
+          type: string
+          description: The random serialNumber in hexadecimal of the certificate.
+        name:
+          type: string
+          description: The subject name of the certificate.
+        days:
+          type: integer
+          description: Validity of the certificate in days.
+        certificate:
+          type: string
+          description: The PEM Base64 encoded certificate.
+        privateKey:
+          type: string
+          description: The PEM Base64 encoded private key.
+    CertificateRequestResponse:
+      title: Certificate request response
+      type: object
+      properties:
+        success:
+          type: string
+          description: The message for successful certificate creation

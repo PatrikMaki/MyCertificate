@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Certificate Application</title>
     <style>
-        /*body {
+        body {
             font-family: Arial, sans-serif;
             margin: 20px;
             transition: background-color 0.3s;
@@ -57,11 +57,12 @@
         }
         button:hover {
             background-color: rgb(255, 0, 0);
-        }*/
+        }
     </style>
 </head>
 <body>
     <h1>My Certificate Application</h1>
+    <a href="/api-docs">api-docs</a><br><br>
     <form id="CertForm" action="javascript:createCert()">
         <label for="text">Common Name:</label>
         <input id="CN" type="text"/><br><br>
@@ -71,8 +72,6 @@
         <input id="C" type="text"/><br><br>
         <label for="text">Validity:</label>
         <input id="days" type="number" min="1"/><br><br>
-        <label for="text">Generate key:</label>
-        <input id="generateKey" type="checkbox" checked="on"/><br><br>
         <input type="submit" value="Create Cert"/><br><br>
     </form>
     <button onclick="test()">test</button>
@@ -87,7 +86,6 @@
             const O = document.getElementById("O").value;            
             const C = document.getElementById("C").value; 
             let days = document.getElementById("days").value;            
-            const generateKey = document.getElementById("generateKey").value;
             
             const validation = validate(CN, O, C, days);
             if (validation !=="") {
@@ -110,8 +108,7 @@
                         "CN": CN, 
                         "O": O,
                         "C": C,
-                        "days": days,
-                        "generateKey": generateKey,    
+                        "days": days
                     })
                 })
                    .then(response => response.json())
@@ -160,7 +157,7 @@
             })
                .then(response => response.json())
                .then(response => console.log(JSON.stringify(response)))
-               .then(listCerts())
+               .then(listCerts()) //Bug: sometimes seems to call too early!
         }
         function validate(CN, O, C, days) {
             if (CN === "") return "Common name cannot be empty";

@@ -83,3 +83,11 @@ User:
 - optional:
   - Certificate signing requests to avoid leaking private key
   - MFA and a reverse proxy
+
+## Swagger
+
+- Swagger OPenAPI
+
+## Notes
+
+- shift, option, F does pretty printing in JS

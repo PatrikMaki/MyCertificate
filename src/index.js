@@ -1,12 +1,22 @@
 const express = require('express');
-const forge = require('node-forge');
 const path = require('path');
-const sqlite3 = require('sqlite3');
+const swaggerUi = require('swagger-ui-express');
+const fs = require('fs');
+const yaml = require('yaml');
+const { 
+    insertCertificate, 
+    getCertificates, 
+    getCertificate, 
+    deleteCertificate } = require('./db/db');
+const {
+    createCert
+} = require('./certs/certs');
+const swaggerFile = fs.readFileSync('./certapi.yaml', 'utf8')
+const swaggerDocument = yaml.parse(swaggerFile)
 const app = express();
 app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 const port = 3000;
-//let cache = {};
-let db = createDbConnection();
 
 let i = 0;
 
@@ -20,8 +30,6 @@ app.post('/certs', async function (req, res) {
     const O = params.O;
     const C = params.C;
     const days = params.days;
-    //const generateKey = params.generateKey
-    console.log(params);
     const validation = validate(CN, O, C, days);
     if (validation !== "") {
         console.log("Alert", validation);
@@ -31,32 +39,23 @@ app.post('/certs', async function (req, res) {
     const id = makeId(8);
     const { certificate, privateKey } = createCert(id, CN, O, C, days);
     //cache[id] = { id: id, name: `/CN=${CN}, /O=${O}, /C=${C}`, days: days, certificate: certificate, privateKey: privateKey };
-    await insertCertificate(id, "name", days, certificate, privateKey);
+    await insertCertificate(id, `/CN=${CN}, /O=${O}, /C=${C}`, days, certificate, privateKey);
     res.status(201).json({ "success": "Certificate created" });
 });
 
 app.get('/certs', async function (_req, res) {
-    //console.log(cache);
     const certs = await getCertificates();
     res.status(200).json(certs)
 });
 
 app.get('/certs/:id', async function (req, res) {
-    console.log(req.params.id);
     const certificate = await getCertificate(req.params.id);
-    console.log(certificate);
     res.status(200).json(certificate);
 });
 
 app.delete('/certs/:id', async function (req, res) {
     const id = req.params.id;
-    console.log(id)
-    //console.log(cache)
-    //const deleted = id in cache;
-    //delete cache[id];
     const deleted = await deleteCertificate(id);
-    //TODO: check
-    //console.log(cache)
     if (deleted) {
         res.status(200).json({ status: "ok" });
     } else {
@@ -64,8 +63,8 @@ app.delete('/certs/:id', async function (req, res) {
     }
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+app.server = app.listen(port, () => {
+    console.log(`My Certification app listening to ${port}`);
 });
 
 //helpers
@@ -83,134 +82,10 @@ function makeId(length) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
-  }
-
-//database helpers:
-function createDbConnection() {
-    const db = new sqlite3.Database("certs.db", (error) => {
-        if (error) {
-            return console.error(error.message);
-        }
-        createTable(db);
-    });
-    console.log("Connection with SQLite has been established");
-    return db;
 }
 
-function createTable(db) {
-    db.exec(`
-    CREATE TABLE IF NOT EXISTS certs
-    (
-      ID TEXT NOT NULL,
-      name TEXT NOT NULL,
-      days INTEGER NOT NULL,
-      certificate TEXT NOT NULL,
-      privateKey TEXT NOT NULL
-    );
-  `);
-}
-
-function insertCertificate(id, name, days, certificate, privateKey) {
-    return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO certs (id, name, days, certificate, privateKey) VALUES (?, ?, ?, ?, ?)';
-        db.run(sql, [id, name, days, certificate, privateKey], function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                console.log(`Row inserted with ID: ${id}`);
-                resolve();
-            }
-        });
-    });
-}
-
-function getCertificates() {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM certs';
-        db.all(sql, [], function (err, rows) {
-            if (err) {
-                reject(err);
-            } else {
-                const result = []
-                rows.forEach((row) => {
-                    console.log(row.id);
-                    result.push(row);
-                });
-                resolve(result);
-            }
-        });
-    });
-}
-
-function getCertificate(id) {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM certs WHERE id = ?';
-        db.get(sql, [id], function (err, row) {
-            if (err) {
-                reject(err);
-            } else {
-                console.log(row.id);
-                resolve(row);
-            }
-        });
-    });
-}
-
-function deleteCertificate(id) {
-    return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM certs WHERE id = ?';
-        db.run(sql, [id], function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                console.log(`Row deleted with ID: ${id}`);
-                resolve(true);
-            }
-        });
-    });
-}
-
-
-///Utility procedures for generating certificates
-//based on:
-//https://node-security.com/posts/certificate-generation-pure-nodejs/#generating-a-certificate-authority
-function createCert(id, CN, O, C, days) {
-    const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
-    const attributes = [{
-        shortName: 'C',
-        value: C
-    }, {
-        shortName: 'O',
-        value: O
-    }, {
-        shortName: 'CN',
-        value: CN
-    }];
-    const cert = forge.pki.createCertificate();
-    cert.publicKey = publicKey;
-    cert.privateKey = privateKey;
-    cert.serialNumber = id;
-    cert.validity.notBefore = getCertNotBefore();
-    cert.validity.notAfter = getCertNotAfter(days);
-    cert.setSubject(attributes);
-    cert.setIssuer(attributes);
-    cert.sign(privateKey, forge.md.sha512.create());
-    const pemCert = forge.pki.certificateToPem(cert);
-    const pemKey = forge.pki.privateKeyToPem(privateKey);
-    return { certificate: pemCert, privateKey: pemKey };
-}
-function getCertNotBefore() {
-    const twoDaysAgo = new Date(Date.now() - 60 * 60 * 24 * 2 * 1000);
-    const year = twoDaysAgo.getFullYear();
-    const month = (twoDaysAgo.getMonth() + 1).toString().padStart(2, '0');
-    const day = twoDaysAgo.getDate();
-    return new Date(`${year}-${month}-${day} 00:00:00Z`);
-}
-
-function getCertNotAfter(days) {
-    const daysLater = new Date(Date.now() + 60 * 60 * 24 * days * 1000);
-    const year = daysLater.getFullYear();
-    const month = (daysLater.getMonth() + 1).toString().padStart(2, '0');
-    const day = daysLater.getDate();
-    return new Date(`${year}-${month}-${day} 23:59:59Z`);
+module.exports = {
+    app, 
+    validate, 
+    makeId
 }
