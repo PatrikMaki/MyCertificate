@@ -88,7 +88,6 @@
             color: white;
         }
 
-        label:hover,
         input[type="submit"]:hover,
         button:hover {
             background-color: #00ff2a;
@@ -107,14 +106,14 @@
         }
 
         .explode {
-            animation: explode 1s ease-in-out;
+            animation: explode 0.5s ease-in-out;
         }
     </style>
 </head>
 
 <body>
     <h1>My Certificate Application</h1>
-    <a href="/api-docs">api-docs</a><br><br>
+    <button onclick="window.location.href='/api-docs'">Go to the API Docs</button><br><br>
     <form id="CertForm" action="javascript:createCert()">
         <label for="text">Common Name:</label>
         <input id="CN" type="text" /><br><br>
