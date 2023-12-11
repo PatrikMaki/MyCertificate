@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,32 +11,38 @@
             margin: 20px;
             transition: background-color 0.3s;
             background-color: #333;
+            color: white;
         }
+
         form {
             margin-top: 10px;
             margin-bottom: 10px;
         }
+
         ul {
             list-style: none;
             padding: 0;
             display: flex;
             flex-wrap: wrap;
         }
+
         li {
             margin: 10px;
             text-align: center;
-            background-color: #333; 
+            background-color: #333;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s;
         }
+
         label {
             background-color: #170283;
             color: rgb(25, 25, 25);
             padding: 5px;
             transition: background-color 0.3s;
         }
+
         input[type="submit"] {
             background-color: #170283;
             color: rgb(25, 25, 25);
@@ -44,9 +51,11 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         input[type="submit"]:hover {
             background-color: #00ff2a;
         }
+
         button {
             background-color: rgb(2, 110, 131);
             color: rgb(25, 25, 25);
@@ -55,24 +64,67 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: rgb(255, 0, 0);
         }
+
+        button.delete-button {
+            background-color: rgb(2, 110, 131);
+            color: rgb(255, 255, 255);
+            padding: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        button.delete-button:hover {
+            background-color: rgb(255, 0, 0);
+        }
+
+        label,
+        input[type="submit"],
+        button {
+            color: white;
+        }
+
+        label:hover,
+        input[type="submit"]:hover,
+        button:hover {
+            background-color: #00ff2a;
+            color: black;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        .explode {
+            animation: explode 1s ease-in-out;
+        }
     </style>
 </head>
+
 <body>
     <h1>My Certificate Application</h1>
     <a href="/api-docs">api-docs</a><br><br>
     <form id="CertForm" action="javascript:createCert()">
         <label for="text">Common Name:</label>
-        <input id="CN" type="text"/><br><br>
+        <input id="CN" type="text" /><br><br>
         <label for="text">Organization:</label>
-        <input id="O" type="text"/><br><br>
+        <input id="O" type="text" /><br><br>
         <label for="text">Country:</label>
-        <input id="C" type="text"/><br><br>
+        <input id="C" type="text" /><br><br>
         <label for="text">Validity:</label>
-        <input id="days" type="number" min="1"/><br><br>
-        <input type="submit" value="Create Cert"/><br><br>
+        <input id="days" type="number" min="1" /><br><br>
+        <input type="submit" value="Create Cert" /><br><br>
     </form>
     <button onclick="test()">test</button>
     <button onclick="listCerts()">list certs</button>
@@ -83,20 +135,20 @@
         }
         function createCert() {
             const CN = document.getElementById("CN").value;
-            const O = document.getElementById("O").value;            
-            const C = document.getElementById("C").value; 
-            let days = document.getElementById("days").value;            
-            
+            const O = document.getElementById("O").value;
+            const C = document.getElementById("C").value;
+            let days = document.getElementById("days").value;
+
             const validation = validate(CN, O, C, days);
-            if (validation !=="") {
+            if (validation !== "") {
                 console.log("Alert", validation);
                 alert(validation)
                 return;
-            }            
+            }
             days = Number(days);
-            const validity=1;
+            const validity = 1;
             const subjectName = "country"
-            if(subjectName==="country") {
+            if (subjectName === "country") {
                 console.log("posting");
                 fetch('/certs', {
                     method: 'POST',
@@ -104,16 +156,16 @@
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        "CN": CN, 
+                    body: JSON.stringify({
+                        "CN": CN,
                         "O": O,
                         "C": C,
                         "days": days
                     })
                 })
-                   .then(response => response.json())
-                   .then(response => console.log(JSON.stringify(response)))
-                   .then(listCerts())
+                    .then(response => response.json())
+                    .then(response => console.log(JSON.stringify(response)))
+                    .then(listCerts())
             } else {
                 //TODO: show error on UI
                 console.log("error");
@@ -127,38 +179,46 @@
                     'Accept': 'application/json'
                 }
             })
-               .then(response => response.json())
-               .then(response => {
-                console.log(JSON.stringify(response));
-                const certList = document.getElementById('certList');
-                certList.innerHTML = '';
+                .then(response => response.json())
+                .then(response => {
+                    console.log(JSON.stringify(response));
+                    const certList = document.getElementById('certList');
+                    certList.innerHTML = '';
 
-                for (const i in response) {
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = `
+                    for (const i in response) {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
                         <p>id: ${response[i].ID}, name: ${response[i].name}</p>
                         <button onclick="download('${response[i].ID}')">Download</button>
-                         <button onclick="deleteCert('${response[i].ID}')">Delete</button>
-                    `;                   
-                    certList.appendChild(listItem);
-                };
-            })
+                        <button class="delete-button" onclick="deleteCert('${response[i].ID}', this)">Delete</button>`                        
+                        certList.appendChild(listItem);
+                    };
+                })
         }
         function download(id) {
             window.location.href = `/certs/${id}`;
         }
-        function deleteCert(id) {
+        function deleteCert(id, button) {
             console.log("deleting");
+            const listItem = button.closest('li');
             fetch(`/certs/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json'
                 }
             })
-               .then(response => response.json())
-               .then(response => console.log(JSON.stringify(response)))
-               .then(listCerts()) //Bug: sometimes seems to call too early!
+                .then(response => response.json())
+                .then(response => console.log(JSON.stringify(response)))
+                .then(() => animateExplosion(listItem));
         }
+        
+        function animateExplosion(element) {
+            element.classList.add('explode');
+            element.addEventListener('animationend', () => {
+                element.remove();
+            });
+        }
+
         function validate(CN, O, C, days) {
             if (CN === "") return "Common name cannot be empty";
             if (C === "") return "A country is needed";
@@ -167,4 +227,5 @@
         }
     </script>
 </body>
+
 </html>
