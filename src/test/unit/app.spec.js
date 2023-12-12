@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app, validate, makeId } = require('../../index');
+const { app, validate, makeId } = require('../../app');
 
 jest.mock('sqlite3', () => ({
     __esModule: true,

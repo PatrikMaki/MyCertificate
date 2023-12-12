@@ -1,27 +1,41 @@
 const express = require('express');
+const favicon = require('express-favicon');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 const yaml = require('yaml');
-const { 
-    insertCertificate, 
-    getCertificates, 
-    getCertificate, 
+const {
+    createDbConnection,
+    insertCertificate,
+    getCertificates,
+    getCertificate,
     deleteCertificate } = require('./db/db');
 const {
     createCert
 } = require('./certs/certs');
+createDbConnection();
 const swaggerFile = fs.readFileSync('./certapi.yaml', 'utf8')
 const swaggerDocument = yaml.parse(swaggerFile)
 const app = express();
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+app.use(favicon(__dirname + '/public/favicon.ico'));
 const port = 3000;
 
 let i = 0;
 
 app.get('/', function (_req, res) {
     res.sendFile(path.join(__dirname, '/public/index.html'));
+});
+
+app.get('/index.js', function (req, res) {
+    res.setHeader('Content-Type', 'text/javascript');
+    res.sendFile(path.join(__dirname, 'public/index.js'));
+});
+
+app.get('/favicon.js', function (req, res) {
+    res.setHeader('Content-Type', 'text/javascript');
+    res.sendFile(path.join(__dirname, 'public/index.js'));
 });
 
 app.post('/certs', async function (req, res) {
@@ -76,17 +90,17 @@ function validate(CN, O, C, days) {
     return "";
 }
 function makeId(length) {
-    var result           = '';
-    var characters       = '0123456789ABCDEF';
+    var result = '';
+    var characters = '0123456789ABCDEF';
     var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
+    for (var i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
 }
 
 module.exports = {
-    app, 
-    validate, 
+    app,
+    validate,
     makeId
 }
