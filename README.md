@@ -57,7 +57,7 @@
 
 ## Swagger
 
-- Swagger OPenAPI
+- Swagger OpenAPI
 
 ## Project structure
 
