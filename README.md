@@ -88,6 +88,10 @@ User:
 
 - Swagger OPenAPI
 
+## Project structure
+
+- 
+
 ## Notes
 
 - shift, option, F does pretty printing in JS
