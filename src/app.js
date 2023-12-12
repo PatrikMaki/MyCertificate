@@ -52,7 +52,6 @@ app.post('/certs', async function (req, res) {
     }
     const id = makeId(8);
     const { certificate, privateKey } = createCert(id, CN, O, C, days);
-    //cache[id] = { id: id, name: `/CN=${CN}, /O=${O}, /C=${C}`, days: days, certificate: certificate, privateKey: privateKey };
     await insertCertificate(id, `/CN=${CN}, /O=${O}, /C=${C}`, days, certificate, privateKey);
     res.status(201).json({ "success": "Certificate created" });
 });
