@@ -41,8 +41,7 @@ function createCert() {
             .then(response => console.log(JSON.stringify(response)))
             .then(listCerts())
     } else {
-        //TODO: show error on UI
-        console.log("error");
+        console.log("unknown error");
     }
 }
 function listCerts() {
