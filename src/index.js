@@ -72,6 +72,7 @@ function validate(CN, O, C, days) {
     if (CN === "") return "Common name cannot be empty";
     if (C === "") return "A country is needed";
     if (days === "") return "validity in days must be given";
+    if (Number(days) < 1 || Number(days) > 365) return "validity must be between 1 and 365 days"
     return "";
 }
 function makeId(length) {
