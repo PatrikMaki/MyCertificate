@@ -1,15 +1,21 @@
 const sqlite3 = require('sqlite3');
-let db = createDbConnection();
+let db;
 
-function createDbConnection() {
-    const db = new sqlite3.Database("certs.db", (error) => {
+function createDbConnection(dbName = "certs.db") {
+    db = new sqlite3.Database(dbName, (error) => {
         if (error) {
             return console.error(error.message);
         }
         createTable(db);
     });
     console.log("Connection with SQLite has been established");
-    return db;
+}
+
+function closeDbConnection() {
+    if (!db) {
+        db.close();
+        db = null;
+    }
 }
 
 function createTable(db) {
@@ -86,7 +92,8 @@ function deleteCertificate(id) {
 }
 
 module.exports = {
-    createDbConnection, 
+    createDbConnection,
+    closeDbConnection, 
     createTable, 
     insertCertificate, 
     getCertificates, 
