@@ -1,4 +1,3 @@
-const sqlite3 = require('sqlite3');
 const { createDbConnection, closeDbConnection, insertCertificate, getCertificates, getCertificate, deleteCertificate } = require('../../db/db');
 
 const testDbPath = ':memory:';
